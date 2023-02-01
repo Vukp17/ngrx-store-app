@@ -1,29 +1,58 @@
-export const initialState = {
-    customers: [
-        {
-          name: "John Doe",
-          phone: "910928392098",
-          address: "123 Sun Street",
-          membership: "Platinum",
-          id: 1
-        },
-    ],
-    loading:false,
-    loaded:true
+import * as customerActions from "../state/customer.action";
+import { createFeatureSelector, createSelector } from "@ngrx/store";
+
+// import { EntityState, EntityAdapter, createEntityAdapter } from "@ngrx/entity";
+
+import { Customer } from "../customer.model";
+import * as fromRoot from "../../state/app-state";
+
+export interface CustomerState{
+    customers: Customer[],
+    loading: boolean,
+    loaded: boolean,
+    error: string
 }
 
-export function customReducer(state=initialState, action){
-  switch(action.type){
-     case "LOAD_CUSTOMER":{
-        return{
+export interface AppState extends fromRoot.AppState {
+  customers:CustomerState
+}
+
+export const initialState: CustomerState = {
+  customers: [],
+  loading: false,
+  loaded: false,
+  error: ""  
+}
+
+export function customReducer(state = initialState,action:customerActions.Actions):CustomerState{
+    switch (action.type) {
+        case customerActions.CustomerActionTypes.LOAD_CUSTOMERS: {
+          return  {
             ...state,
-            loding:true,
-            loaded:false
-
+            loading: true,
+           
+          };
         }
-     }
-     default:{
-        return state;
-     }
-  }
-}
+        case customerActions.CustomerActionTypes.LOAD_CUSTOMERS_SUCCESS: {
+          return {
+            ...state,
+            loading: false,
+            loaded: false,
+            customers: action.payload
+          };
+        }
+    
+        case customerActions.CustomerActionTypes.LOAD_CUSTOMERS_FAIL: {
+          return {
+            ...state,
+            customers:[],
+            loading: false,
+            loaded: false,
+            error: action.payload
+          };
+        }
+        default:{
+            return state
+        }
+    }
+} 
