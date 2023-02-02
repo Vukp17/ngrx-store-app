@@ -13,4 +13,13 @@ export class CustomerService {
   getCustomers(): Observable<Customer[]> {
     return this.http.get<Customer[]>(this.customersUrl);
   }
+  getCustomerById(payload: number): Observable<Customer> {
+    return this.http.get<Customer>(`${this.customersUrl}/${payload}`);
+  }
+  updateCustomer(customer: Customer): Observable<Customer> {
+    return this.http.patch<Customer>(
+      `${this.customersUrl}/${customer.id}`,
+      customer
+    );
+  }
 }

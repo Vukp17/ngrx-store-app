@@ -1,32 +1,37 @@
 import * as customerActions from "../state/customer.action";
 import { createFeatureSelector, createSelector } from "@ngrx/store";
-
-// import { EntityState, EntityAdapter, createEntityAdapter } from "@ngrx/entity";
+import { EntityState, EntityAdapter, createEntityAdapter } from "@ngrx/entity";
 
 import { Customer } from "../customer.model";
 import * as fromRoot from "../../state/app-state";
 
-export interface CustomerState{
-    customers: Customer[],
-    loading: boolean,
-    loaded: boolean,
-    error: string
+export interface CustomerState extends EntityState<Customer> {
+  selectedCustomerId: number | null;
+  loading: boolean;
+  loaded: boolean;
+  error: string;
 }
-
 export interface AppState extends fromRoot.AppState {
   customers:CustomerState
 }
 
-export const initialState: CustomerState = {
-  customers: [],
+export const customerAdapter: EntityAdapter<Customer> = createEntityAdapter<
+  Customer
+>();
+export const defaultCustomer: CustomerState = {
+  ids:  [],
+  entities: {},
+  selectedCustomerId: null,
   loading: false,
   loaded: false,
-  error: ""  
-}
+  error: ""
+};
+export const initialState = customerAdapter.getInitialState(defaultCustomer);
+
 
 export function customReducer(state = initialState,action:customerActions.Actions):CustomerState{
     switch (action.type) {
-        case customerActions.CustomerActionTypes.LOAD_CUSTOMERS: {
+        case customerActions.CustomerActionTypes.LOAD_CUSTOMER: {
           return  {
             ...state,
             loading: true,
@@ -34,18 +39,17 @@ export function customReducer(state = initialState,action:customerActions.Action
           };
         }
         case customerActions.CustomerActionTypes.LOAD_CUSTOMERS_SUCCESS: {
-          return {
+          return customerAdapter.setAll(action.payload, {
             ...state,
             loading: false,
-            loaded: false,
-            customers: action.payload
-          };
+            loaded: true
+          });
         }
     
-        case customerActions.CustomerActionTypes.LOAD_CUSTOMERS_FAIL: {
+        case customerActions.CustomerActionTypes.LOAD_CUSTOMER_FAIL: {
           return {
             ...state,
-            customers:[],
+            entities: {},
             loading: false,
             loaded: false,
             error: action.payload
@@ -55,4 +59,23 @@ export function customReducer(state = initialState,action:customerActions.Action
             return state
         }
     }
+
 } 
+const getCustomerFetaureState = createFeatureSelector<CustomerState>("customers")
+
+export const getCustomers = createSelector(
+  getCustomerFetaureState,
+  customerAdapter.getSelectors().selectAll
+)
+export const getCustomersLoading = createSelector(
+  getCustomerFetaureState,
+  (state: CustomerState) =>state.loading
+)
+export const getCustomersLoaded = createSelector(
+  getCustomerFetaureState,
+  (state: CustomerState) =>state.loaded
+)
+export const getError = createSelector(
+  getCustomerFetaureState,
+  (state: CustomerState) =>state.error
+)
